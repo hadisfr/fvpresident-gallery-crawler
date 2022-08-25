@@ -22,7 +22,7 @@ def parse_page(page_id: int) -> Iterable[Dict[str, Any]]:
         description = image["data-description"]
         parsed = description_regex.findall(description)
         if len(parsed) != 1 or len(parsed[0]) != 2:
-            print("invalid data-description in page %s:\t%s" % (image["page_id"], image["data-description"]))
+            print("invalid data-description in page %s:\t%s" % (image["page_id"], image["data-description"]), flush=True)
             image["date_author_news"] = ""
             return image
         description, date_author = parsed[0]
@@ -32,7 +32,7 @@ def parse_page(page_id: int) -> Iterable[Dict[str, Any]]:
 
     def parse_image(image: Dict[str, Any]) -> Dict[str, Any]:
         if image["alt"] != "" or image["src"] != image["data-image"] or not image["date_author_news"].startswith("تاریخ انتشار: "):
-            print("invalid fields:\n%s" % json.dumps(image))
+            print("invalid fields:\n%s" % json.dumps(image), flush=True)
             return image
         return {
             "Page ID": image["page_id"],
@@ -48,11 +48,11 @@ def parse_page(page_id: int) -> Iterable[Dict[str, Any]]:
     url = "https://fvpresident.ir/fa/gallery/%d" % page_id
     page = requests.get(url, verify=False)
     if page.status_code != 200:
-        print("could not get %s: %s" % (page_id, page.status_code))
+        print("could not get %s: %s" % (page_id, page.status_code), flush=True)
         return []
     images = details_patter.findall(page.text)
     if not len(images):
-        print("no image found in %s" % page_id)
+        print("no image found in %s" % page_id, flush=True)
     images = map(lambda img: {
         "page_id": page_id,
         "alt": img[0].strip(),
@@ -69,7 +69,7 @@ def parse_page(page_id: int) -> Iterable[Dict[str, Any]]:
 def download_img(img_url: str, page_id: str) -> None:
     response = requests.get(img_url, stream=True, verify=False)
     if response.status_code != 200:
-        print("could not get image %s: %s" % (img_url, response.status_code))
+        print("could not get image %s: %s" % (img_url, response.status_code), flush=True)
         return
     dir_addr = path.join("pics", str(page_id))
     file_addr = path.join(dir_addr, img_url.split("/")[-1])
@@ -84,7 +84,7 @@ def main():
     with open("metadata.jsonl", "w") as f:
         for page_id in trange(1, LAST_PAGE_ID + 1):
             for image in parse_page(page_id):
-                print(json.dumps(image, ensure_ascii=False), file=f)
+                print(json.dumps(image, ensure_ascii=False), file=f, flush=True)
 
 
 if __name__ == '__main__':
