@@ -4,6 +4,7 @@ pics
 *.png
 *.jsonl
 *.json
+*.log
 
 
 ### Python ###
